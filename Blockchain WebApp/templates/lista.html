@@ -1,0 +1,28 @@
+
+
+{%extends "template.html" %}
+{%block conteudo%}
+
+        <table class="table table-striped  table-bordered">
+            <thead class="thead-default">
+                <tr>
+                    <th><b>Origem</b></th>
+                    <th><b>Destino</b></th>
+                    <th><b>Valor</b></th>
+                    <th><b>Horario</b></th>
+                </tr>
+            </thead>
+            <tbody>
+               {% for transacao in transacoes %}
+                <tr>
+                    <td>{{transacao.origem}}</td>
+                    <td>{{transacao.destino}}</td>
+                    <td>{{transacao.valor}}</td>
+                    <td>{{transacao.timestamp}}</td>
+                </tr>
+                {%endfor%}
+               
+            </tbody>
+        </table>
+    
+{%endblock%}

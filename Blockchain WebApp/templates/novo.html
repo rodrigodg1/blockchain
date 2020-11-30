@@ -1,0 +1,21 @@
+{%extends "template.html" %}
+{%block conteudo%}
+
+      <form action="/mine_block" method="POST">
+        <fieldset>
+          <div class="form-group">
+            <label  for="nome">Origem</label>
+            <input type="text" id="origem" name="origem" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="categoria">Destino</label>
+            <input type="text" id="destino" name="destino" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="console">Valor</label>
+            <input type="text" id="valor" name="valor" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-salvar">Salvar</button>
+        </fieldset>
+      </form>
+{%endblock %}
