@@ -10,7 +10,7 @@ def verifica_desencriptacao(decriptada, message):
         if(decriptada == message):
             print("Mensagem Decriptada Com Sucesso: ", decriptada)
 
-
+    # tratar o erro
     except:
             print("Error executing decriptation")
 
