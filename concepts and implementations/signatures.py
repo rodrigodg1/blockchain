@@ -54,13 +54,14 @@ def verify(message, sig, public):
 
 if __name__ == '__main__':
     pr,pu = generate_keys()
-    print(pr)
-    print(pu)
+    print("Private Key: ",pr)
+    print("\nPublic key: ",pu)
+
     message = "This is a secret message"
     sig = sign(message, pr)
-    print(sig)
+    print("sig msg: ", sig)
     correct = verify(message, sig, pu)
-    print(correct)
+    print("Correct: ", correct)
 
     if correct:
         print("Success! Good sig")
@@ -76,6 +77,9 @@ if __name__ == '__main__':
         print("ERROR! Bad signature checks out!")
     else:
         print("Success! Bad sig detected")
+
+
+
 
     badmess = message + "Q"
     correct= verify(badmess, sig, pu)
