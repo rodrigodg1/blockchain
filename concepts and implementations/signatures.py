@@ -1,9 +1,6 @@
-#Signatures.py
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.exceptions import InvalidSignature
+from libs import *
+
+
 
 def generate_keys():
     #gera a chave privada
@@ -59,7 +56,7 @@ if __name__ == '__main__':
 
     message = "This is a secret message"
     sig = sign(message, pr)
-    print("sig msg: ", sig)
+    print("\nSig msg: ", sig)
     correct = verify(message, sig, pu)
     print("Correct: ", correct)
 
@@ -72,6 +69,7 @@ if __name__ == '__main__':
 
     sig2 = sign(message, pr2)
 
+    #porem verifica se a mensagem está correta com a chave publica 1 (outra chave)
     correct= verify(message, sig2, pu)
     if correct:
         print("ERROR! Bad signature checks out!")
