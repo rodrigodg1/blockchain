@@ -6,4 +6,10 @@ As implementações tem como objetivo explorar as funcionalidades do blockchain 
 
 - As chamadas para as funcionalidades do blockchain estão no arquivo testes.py
 
-- A estrutura dos arquivos estão divididas em módulos*
+- A estrutura dos arquivos estão divididas em módulos
+
+
+### signatures.py
+ - primeiramente são gerados as chaves públicas e privadas
+ - Depois uma mensagem é assinada pela chave privada e verificada com a chave pública
+
