@@ -3,19 +3,19 @@ from libs import *
 
 
 def generate_keys():
-    #gera a chave privada
     private = rsa.generate_private_key(
         public_exponent=65537,
         key_size=2048,
         backend=default_backend()
-    ) 
-    #a partir da chave private, é possível gerar a chave pública   
+    )    
     public = private.public_key()
-    return private, public
+    pu_ser = public.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )    
+    return private, pu_ser
 
 def sign(message, private):
-    #assina a mensagem que recebeu por parametro
-    ## assinatura realizada com a chave privada
     message = bytes(str(message), 'utf-8')
     sig = private.sign(
         message,
@@ -27,9 +27,12 @@ def sign(message, private):
     )
     return sig
 
-#para verificar, nao é necessario a chave privada
-# isso é feito de forma rápida com a chave pública
-def verify(message, sig, public):
+def verify(message, sig, pu_ser):
+    public = serialization.load_pem_public_key(
+        pu_ser,
+        backend=default_backend()
+    )
+    
     message = bytes(str(message), 'utf-8')
     try:
         public.verify(

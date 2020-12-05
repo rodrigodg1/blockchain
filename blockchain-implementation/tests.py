@@ -81,102 +81,90 @@ if __name__ == '__main__':
 
 
     # transactions
+    # para representar as transações, deve-ser ter uma entrar Input e uma saida Output,
+    # chave publica para a conta origem e chave publica para a conta destino
+    # quem inicia a transação, deve-ser assina-la com a chave privada
     print("transactions\n")
+
 
     pr1, pu1 = generate_keys()
     pr2, pu2 = generate_keys()
     pr3, pu3 = generate_keys()
-    pr4, pu4 = generate_keys()
 
-    #cria uma transação
-    #na transação vai a chave publica
-    #e a chave privada assina a transação
-    #todos os dados da transação são assinados pela chave privada
-    
-    Tx0 = Tx()
-    Tx0.add_input(pu1,10)
-    Tx0.add_output(pu2,20)
-    Tx0.sign(pr1)
-    if Tx0.is_valid():
-        print("Sucessooooooo\n")
-    else:
-        print("Fraudeee\n")
-    
-    '''
     Tx1 = Tx()
     Tx1.add_input(pu1, 1)
     Tx1.add_output(pu2, 1)
     Tx1.sign(pr1)
+
     if Tx1.is_valid():
         print("Success! Tx is valid")
-    else:
-        print("ERROR! Tx is invalid")
+
+    #armazena a transação no arquivo
+    savefile = open("tx.dat", "wb")
+    pickle.dump(Tx1, savefile)
+    savefile.close()
+
+    #carrega a transação
+    loadfile = open("tx.dat", "rb")
+    newTx = pickle.load(loadfile)
+
+    if newTx.is_valid():
+        print("Sucess! Loaded tx is valid")
+    loadfile.close()
+
+    #bloco genesis nao tem anterior (None)
+    root = TxBlock(None)
+    root.addTx(Tx1)
 
     Tx2 = Tx()
-    Tx2.add_input(pu1, 2)
-    Tx2.add_output(pu2, 1)
+    Tx2.add_input(pu2,1.1)
     Tx2.add_output(pu3, 1)
-    Tx2.sign(pr1)
+    Tx2.sign(pr2)
+    root.addTx(Tx2)
 
+    #cria um segundo bloco da cadeia
+    #referenciando o genesis como anterior
+    B1 = TxBlock(root)
     Tx3 = Tx()
-    Tx3.add_input(pu3, 1.2)
-    Tx3.add_output(pu1, 1.1)
-    Tx3.add_reqd(pu4)
+    Tx3.add_input(pu3,1.1)
+    Tx3.add_output(pu1, 1)
     Tx3.sign(pr3)
-    Tx3.sign(pr4)
-
-    for t in [Tx1, Tx2, Tx3]:
-        if t.is_valid():
-            print("Success! Tx is valid")
-        else:
-            print("ERROR! Tx is invalid")
-
-    # Wrong signatures
+    B1.addTx(Tx3)
+    
     Tx4 = Tx()
-    Tx4.add_input(pu1, 1)
+    Tx4.add_input(pu1,1)
     Tx4.add_output(pu2, 1)
-    Tx4.sign(pr2)
+    Tx4.add_reqd(pu3)
+    Tx4.sign(pr1)
+    Tx4.sign(pr3)
+    B1.addTx(Tx4)
 
-    # Escrow Tx not signed by the arbiter
-    Tx5 = Tx()
-    Tx5.add_input(pu3, 1.2)
-    Tx5.add_output(pu1, 1.1)
-    Tx5.add_reqd(pu4)
-    Tx5.sign(pr3)
+    savefile = open("block.dat", "wb")
+    pickle.dump(B1, savefile)
+    savefile.close()
 
-    # Two input addrs, signed by one
-    Tx6 = Tx()
-    Tx6.add_input(pu3, 1)
-    Tx6.add_input(pu4, 0.1)
-    Tx6.add_output(pu1, 1.1)
-    Tx6.sign(pr3)
+    loadfile = open("block.dat" ,"rb")
+    load_B1 = pickle.load(loadfile)
 
-    # Outputs exceed inputs
-    Tx7 = Tx()
-    Tx7.add_input(pu4, 1.2)
-    Tx7.add_output(pu1, 1)
-    Tx7.add_output(pu2, 2)
-    Tx7.sign(pr4)
-
-    # Negative values
-    Tx8 = Tx()
-    Tx8.add_input(pu2, -1)
-    Tx8.add_output(pu1, -1)
-    Tx8.sign(pr2)
-
-    # Modified Tx
-    Tx9 = Tx()
-    Tx9.add_input(pu1, 1)
-    Tx9.add_output(pu2, 1)
-    Tx9.sign(pr1)
-    # outputs = [(pu2,1)]
-    # change to [(pu3,1)]
-    Tx9.outputs[0] = (pu3, 1)
-
-    for t in [Tx4, Tx5, Tx6, Tx7, Tx8, Tx9]:
-        if t.is_valid():
-            print("ERROR! Bad Tx is valid")
+# verifica os blocos criados aqui e tbm dos arquivos
+    for b in [root, B1, load_B1, load_B1.previousBlock]:
+        if b.is_valid():
+            print ("Success! Valid block")
         else:
-            print("Success! Bad Tx is invalid")
+            print ("ERROR! Bad block")
 
-    '''
+
+
+    B2 = TxBlock(B1)
+    Tx5 = Tx()
+    Tx5.add_input(pu3, 1)
+    Tx5.add_output(pu1, 100)
+    Tx5.sign(pr3)
+    B2.addTx(Tx5)
+
+    load_B1.previousBlock.addTx(Tx4)
+    for b in [B2, load_B1]:
+        if b.is_valid():
+            print ("ERROR! Bad block verified.")
+        else:
+            print ("Success! Bad blocks detected")  

@@ -31,8 +31,13 @@ class CBlock:
         digest.update(bytes(str(self.previousHash), 'utf8'))
         return digest.finalize()
 
+    def is_valid(self):
+        if self.previousBlock == None:
+            return True
+        return self.previousBlock.computeHash() == self.previousHash
 
 # transactions
+
 
 class Tx:
     inputs = None
@@ -60,10 +65,6 @@ class Tx:
         newsig = sign(message, private)
         self.sigs.append(newsig)
 
-
-    #se nao for a assinatura correta -> erro
-    #se a quantidade for <0 -> erro
-    #se o total de saida > entrada -> erro
     def is_valid(self):
         total_in = 0
         total_out = 0
@@ -71,12 +72,10 @@ class Tx:
         for addr, amount in self.inputs:
             found = False
             for s in self.sigs:
-                #verifica a msg com todos os dados
-                #junto com a assinatura e chave publica
                 if verify(message, s, addr):
                     found = True
             if not found:
-                print("No good sig found for " + str(message))
+                #print ("No good sig found for " + str(message))
                 return False
             if amount < 0:
                 return False
@@ -94,7 +93,7 @@ class Tx:
             total_out = total_out + amount
 
         if total_out > total_in:
-            print("Outputs exceed inputs")
+            #print("Outputs exceed inputs")
             return False
 
         return True
@@ -105,3 +104,40 @@ class Tx:
         data.append(self.outputs)
         data.append(self.reqd)
         return data
+
+    def __repr__(self):
+        reprstr = "INPUTS:\n"
+        for addr, amt in self.inputs:
+            reprstr = reprstr + str(amt) + " from " + str(addr) + "\n"
+        reprstr = reprstr + "OUTPUTS:\n"
+        for addr, amt in self.outputs:
+            reprstr = reprstr + str(amt) + " to " + str(addr) + "\n"
+        reprstr = reprstr + "REQD:\n"
+        for r in self.reqd:
+            reprstr = reprstr + str(r) + "\n"
+        reprstr = reprstr + "SIGS:\n"
+        for s in self.sigs:
+            reprstr = reprstr + str(s) + "\n"
+        reprstr = reprstr + "END\n"
+        return reprstr
+
+
+class TxBlock (CBlock):
+    def __init__(self, previousBlock):
+        super(TxBlock, self).__init__([], previousBlock)
+
+# adiciona uma transação ao bloco como dados
+
+    def addTx(self, Tx_in):
+        self.data.append(Tx_in)
+
+#verifica se as transações no bloco são válidas
+#percorre as transações armazenadas como dados no bloco
+#e verifica se essas transações são válidas
+    def is_valid(self):
+        if not super(TxBlock, self).is_valid():
+            return False
+        for tx in self.data:
+            if not tx.is_valid():
+                return False
+        return True
