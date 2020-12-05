@@ -10,6 +10,13 @@ As implementações tem como objetivo explorar as funcionalidades do blockchain 
 
 
 ### signatures.py
- - primeiramente são gerados as chaves públicas e privadas
+ - Primeiramente são gerados as chaves públicas e privadas
  - Depois uma mensagem é assinada pela chave privada e verificada com a chave pública
+  
+### hashing.py
+ - Utilizado para gerar hash de uma mensagem
 
+  
+### encryption_decryption.py
+ - Realiza a criptografia da mensagem com a chave publica 
+ - Descriptografa com a chave privada
