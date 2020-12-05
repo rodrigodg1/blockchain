@@ -15,6 +15,7 @@ def generate_keys():
     )    
     return private, pu_ser
 
+
 def sign(message, private):
     message = bytes(str(message), 'utf-8')
     sig = private.sign(
@@ -26,6 +27,7 @@ def sign(message, private):
         hashes.SHA256()
     )
     return sig
+
 
 def verify(message, sig, pu_ser):
     public = serialization.load_pem_public_key(
@@ -78,8 +80,6 @@ if __name__ == '__main__':
         print("ERROR! Bad signature checks out!")
     else:
         print("Success! Bad sig detected")
-
-
 
 
     badmess = message + "Q"

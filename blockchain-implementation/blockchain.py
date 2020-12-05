@@ -18,12 +18,17 @@ class CBlock:
     data = None
     previousHash = None
     previousBlock = None
+    id_block = 0
 
     def __init__(self, data, previousBlock):
         self.data = data
         self.previousBlock = previousBlock
         if previousBlock != None:
             self.previousHash = previousBlock.computeHash()
+
+            #apenas um id para o bloco
+            self.id_block = self.previousBlock.id_block + 1
+
 
     def computeHash(self):
         digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
@@ -123,13 +128,30 @@ class Tx:
 
 
 class TxBlock (CBlock):
+
+    valid_transactions_count = 0
+    
+
     def __init__(self, previousBlock):
-        super(TxBlock, self).__init__([], previousBlock)
+        super(TxBlock, self).__init__([],previousBlock)
+        
 
 # adiciona uma transação ao bloco como dados
 
+
+    #contagem das transações válidas no bloco
+    def count_valid_transactions(self):
+        for tx in self.data:
+            if tx.is_valid():
+                self.valid_transactions_count = self.valid_transactions_count + 1
+            
+        return self.valid_transactions_count
+                
+
+
     def addTx(self, Tx_in):
         self.data.append(Tx_in)
+
 
 #verifica se as transações no bloco são válidas
 #percorre as transações armazenadas como dados no bloco
@@ -140,4 +162,20 @@ class TxBlock (CBlock):
         for tx in self.data:
             if not tx.is_valid():
                 return False
+
         return True
+
+
+
+class Blockchain:
+    count_blocks = 0
+    chain = []
+    id_chain = ""
+
+    #nome para a cadeia
+    def __init__(self,id_chain):
+        self.id_chain = id_chain
+
+    def add_block(self,block):
+        self.chain.append(block)
+        self.count_blocks = self.count_blocks + 1
