@@ -1,6 +1,6 @@
-#intructions
+### intructions
 
-*first: installed
+* first: installed
   - go
   - rust
   - wasmcli
