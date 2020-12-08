@@ -83,7 +83,7 @@ echo $CONTRACT
 
 # consult contract information
 # we should see this contract with 50000ucosm
-wasmcli query wasms contract $CONTRACT
+wasmcli query wasm contract $CONTRACT
 wasmcli query account $CONTRACT
 wasmcli query wasm contract-state all $CONTRACT
 
