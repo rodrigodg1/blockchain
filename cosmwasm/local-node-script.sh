@@ -57,7 +57,7 @@ wasmd start --home ${APP_HOME}
 
 
 
-#upload contract 
+#upload contract, inside contract folder
 RES=$(wasmcli tx wasm store cw_escrow.wasm --from fred --chain-id="localnet" --gas-prices="0.025ucosm" --gas="auto" --gas-adjustment="1.2" -y)
 
 CODE_ID=$(echo $RES | jq -r '.logs[0].events[0].attributes[-1].value')
