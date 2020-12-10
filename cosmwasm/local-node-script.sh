@@ -1,3 +1,6 @@
+#CREATE INSIDE wasmd DIRECTORY
+
+
 APP_HOME="~/.wasmd"
 CLI_HOME="~/.wasmcli"
 
