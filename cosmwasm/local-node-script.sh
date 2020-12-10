@@ -6,6 +6,7 @@ wasmd init localnet --chain-id localnet --home ${APP_HOME}
 
 
 
+#define some configs about network in ~/wasmd/~/.wasmd/config/app.toml
 sed -i -r 's/minimum-gas-prices = ""/minimum-gas-prices = "0.025ucosm"/' ${APP_HOME}/config/app.toml
 
 
