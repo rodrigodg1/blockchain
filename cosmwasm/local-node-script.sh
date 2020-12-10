@@ -90,7 +90,7 @@ wasmcli query wasm contract-state all $CONTRACT
 
 
 #create transaction
-APPROVE='{"approve":{"quantity":[{"amount":"1","denom":"ucosm"}]}}'
+APPROVE='{"approve":{"quantity":[{"amount":"1","denom":"ucosm","medicines":"medicine1 for example", "diagnosis":"diagnosis1 for example"}]}}'
 
 
 #send transaction to network
