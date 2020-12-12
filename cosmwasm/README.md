@@ -18,7 +18,10 @@
 
 ### for automation with scripts
 
+*see in transactions scripts*
+
 * use export for
 
 > $APPROVE
+
 > $CONTRACT
