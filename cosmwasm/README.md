@@ -14,3 +14,11 @@
   
   
  * execute the steps in script
+
+
+### for automation with scripts
+
+* use export for
+
+> $APPROVE
+> $CONTRACT
