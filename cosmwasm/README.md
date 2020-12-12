@@ -18,7 +18,7 @@
 
 ### for automation with scripts
 
-*see in transactions scripts*
+*see in transactions script*
 
 * use export for
 
