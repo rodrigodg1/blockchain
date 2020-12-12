@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#first you need export theses variables
+#first you need export theses variables in terminal
 
 echo $APPROVE
 echo $CONTRACT
