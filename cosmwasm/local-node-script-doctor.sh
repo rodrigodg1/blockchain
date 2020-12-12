@@ -94,7 +94,11 @@ wasmcli query wasm contract-state all $CONTRACT
 
 
 #create transaction
-APPROVE='{"approve":{"quantity":[{"amount":"1","denom":"ucosm","medicines":"medicine1 for example", "diagnosis":"diagnosis1 for example"}]}}'
+APPROVE='{"approve":{"quantity":[{
+"amount":"1",
+"denom":"ucosm",
+"medicines":"Vicodin (hydrocodone/acetaminophen) and Simvastatin (Generic for Zocor)",
+"diagnosis":"Anxiety: Lucys sudden confinement in hospital, diminished ability to perform daily activities, and concerns about her family and health, predispose her to experiencing anxiety, a potential trigger of depression"}]}}'
 
 
 #send transaction to network
