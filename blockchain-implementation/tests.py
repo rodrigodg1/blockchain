@@ -88,10 +88,12 @@ if __name__ == '__main__':
     pr2, pu2 = generate_keys()
     pr3, pu3 = generate_keys()
 
+    #cria uma transação e adiciona algumas entradas com uma qtd de tokens
     Tx1 = Tx()
     Tx1.add_input(pu1, 1)
     Tx1.add_input(pu1, 1)
     Tx1.add_output(pu2, 1)
+    #assina essa transação
     Tx1.sign(pr1)
 
     if Tx1.is_valid():
@@ -110,6 +112,7 @@ if __name__ == '__main__':
         print("Sucess! Loaded tx is valid")
     loadfile.close()
 
+    #BLOCOS
     # bloco genesis nao tem anterior (None)
     root = TxBlock(None)
     root.addTx(Tx1)
@@ -119,7 +122,10 @@ if __name__ == '__main__':
     Tx2.add_input(pu2, 1.1)
     Tx2.add_output(pu3, 1)
     Tx2.sign(pr2)
+    #adiciona essa transação no bloco genesis
     root.addTx(Tx2)
+
+
 
     # cria um segundo bloco da cadeia
     # referenciando o genesis como anterior
@@ -128,6 +134,7 @@ if __name__ == '__main__':
     Tx3.add_input(pu3, 1.1)
     Tx3.add_output(pu1, 1)
     Tx3.sign(pr3)
+    #adiciona essa transação no bloco B1
     B1.addTx(Tx3)
 
     # transacao valida
@@ -137,6 +144,7 @@ if __name__ == '__main__':
     Tx4.add_reqd(pu3)
     Tx4.sign(pr1)
     Tx4.sign(pr3)
+    #adiciona essa transação no bloco B1
     B1.addTx(Tx4)
 
     Tx0 = Tx()

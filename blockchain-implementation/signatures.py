@@ -1,7 +1,7 @@
 from libs import *
 
 
-
+#gera a chave privada e publica
 def generate_keys():
     private = rsa.generate_private_key(
         public_exponent=65537,
@@ -15,7 +15,7 @@ def generate_keys():
     )    
     return private, pu_ser
 
-
+#assina a mensagem com sua chave privada
 def sign(message, private):
     message = bytes(str(message), 'utf-8')
     sig = private.sign(
@@ -28,7 +28,7 @@ def sign(message, private):
     )
     return sig
 
-
+#verifica a validade da mensagem, com a assinatura e chave publica
 def verify(message, sig, pu_ser):
     public = serialization.load_pem_public_key(
         pu_ser,

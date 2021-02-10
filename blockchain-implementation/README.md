@@ -8,6 +8,12 @@ As implementações tem como objetivo explorar as funcionalidades do blockchain 
 
 - A estrutura dos arquivos estão divididas em módulos
 
+### Recomendação
+- Utilizar Anaconda e Spyder
+
+### Requisitos
+- PIP
+ > python -m pip --version
 
 ### signatures.py
  - Primeiramente são gerados as chaves públicas e privadas
