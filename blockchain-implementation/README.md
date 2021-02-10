@@ -9,6 +9,7 @@ As implementações tem como objetivo explorar as funcionalidades do blockchain 
 - A estrutura dos arquivos estão divididas em módulos
 
 ### Recomendação
+- Estudar a documentação https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa.html
 - Utilizar Anaconda e Spyder
 
 ### Requisitos
