@@ -13,6 +13,14 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives import hashes
 import pickle
+import random
+
+import time
+
+reward = 25.0
+leading_zeros = 2
+next_char_limit = 20
+
 
 
 #gera a chave privada e publica
@@ -69,8 +77,6 @@ def verify(message, sig, pu_ser):
 
 
 
-
-
 #cria uma conta
 #com os atributos, chave privada, publica, quantidade de tokens e uma carteira com essas informações
 class Account:
@@ -113,13 +119,12 @@ class Account:
     
 
 
-
-
 class Tx:
-    inputs = []
-    outputs = []
-    sigs = []
-    reqd = []
+ 
+    inputs = None
+    outputs =None
+    sigs = None
+    reqd = None
     
     #o que tem em uma transação simples
     #entradas, saidas e assinaturas
@@ -128,26 +133,21 @@ class Tx:
         self.outputs = []
         self.sigs = []
         self.reqd = []
-        
-    
-    def add_input(self,from_addr,amount):
-        self.inputs.append((from_addr,amount))
-    
-    def add_output(self,to_addr,amount):
-        self.outputs.append((to_addr,amount))
-        
-    def add_reqd(self,addr):
+    def add_input(self, from_addr, amount):
+        self.inputs.append((from_addr, amount))
+    def add_output(self, to_addr, amount):
+        self.outputs.append((to_addr, amount))
+    def add_reqd(self, addr):
         self.reqd.append(addr)
     
 
         
     def __gather(self):
-        data = []
+        data=[]
         data.append(self.inputs)
         data.append(self.outputs)
         data.append(self.reqd)
         return data
-    
     
     
     def __repr__(self):
@@ -180,10 +180,10 @@ class Tx:
         total_in = 0
         total_out = 0
         message = self.__gather()
-        for addr, amount in self.inputs:
+        for addr,amount in self.inputs:
             found = False
             for s in self.sigs:
-                if verify(message, s, addr):
+                if verify(message, s, addr) :
                     found = True
             if not found:
                 #print ("No good sig found for " + str(message))
@@ -194,25 +194,24 @@ class Tx:
         for addr in self.reqd:
             found = False
             for s in self.sigs:
-                if verify(message, s, addr):
+                if verify(message, s, addr) :
                     found = True
             if not found:
                 return False
-        for addr, amount in self.outputs:
+        for addr,amount in self.outputs:
             if amount < 0:
                 return False
             total_out = total_out + amount
 
-        if total_out > total_in:
+        #if total_out > total_in:
             #print("Outputs exceed inputs")
-            return False
-
+        #    return False
+        
         return True
   
     
         
  
-    
  
 
 #informações do cabeçalho do bloco
@@ -252,36 +251,25 @@ class Block:
         return self.previousBlock.computeHash() == self.previousHash
 
 
-    
-
-
-
-
 
 
 class TxBlock (Block):
-
-    valid_transactions_count = 0
     
-
+    nonce = "AAAAAAA"
     def __init__(self, previousBlock):
-        super(TxBlock, self).__init__([],previousBlock)
-        
-
-# adiciona uma transação ao bloco como dados
-#contagem das transações válidas no bloco
-    def count_valid_transactions(self):
-        for tx in self.data:
-            if tx.is_valid():
-                self.valid_transactions_count = self.valid_transactions_count + 1
-            
-        return self.valid_transactions_count
-                
-
-
+        super(TxBlock, self).__init__([], previousBlock)
     def addTx(self, Tx_in):
         self.data.append(Tx_in)
-
+    def __count_totals(self):
+        total_in = 0
+        total_out = 0
+        for tx in self.data:
+            for addr, amt in tx.inputs:
+                total_in = total_in + amt
+            for addr, amt in tx.outputs:
+                total_out = total_out + amt
+        return total_in, total_out
+    
 
 #verifica se as transações no bloco são válidas
 #percorre as transações armazenadas como dados no bloco
@@ -292,8 +280,41 @@ class TxBlock (Block):
         for tx in self.data:
             if not tx.is_valid():
                 return False
-
+        total_in, total_out = self.__count_totals()
+        if total_out - total_in - reward > 0.000000000001:
+            return False
         return True
+    def good_nonce(self):
+        digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
+        digest.update(bytes(str(self.data),'utf8'))
+        digest.update(bytes(str(self.previousHash),'utf8'))
+        digest.update(bytes(str(self.nonce),'utf8'))
+        this_hash = digest.finalize()
+       
+        if this_hash[:leading_zeros] != bytes(''.join([ '\x4f' for i in range(leading_zeros)]),'utf8'):
+            return False
+        return int(this_hash[leading_zeros]) < next_char_limit
+    def find_nonce(self):
+        for i in range(1000000):
+            self.nonce = ''.join([ 
+                   chr(random.randint(0,255)) for i in range(10*leading_zeros)])
+            if self.good_nonce():
+                return self.nonce  
+        return None
+    
+    
+    
+    valid_transactions_count = 0
+
+# adiciona uma transação ao bloco como dados
+#contagem das transações válidas no bloco
+    def count_valid_transactions(self):
+        for tx in self.data:
+            if tx.is_valid():
+                self.valid_transactions_count = self.valid_transactions_count + 1
+            
+        return self.valid_transactions_count
+                
 
 
 
@@ -366,6 +387,23 @@ if __name__ == '__main__':
     
     block1 = TxBlock(root)
     block1.addTx(tx2)
+    
+    
+    
+    
+    
+    start = time.time()
+    print(root.find_nonce())
+    elapsed = time.time() - start
+    print("elapsed time: " + str(elapsed) + " s.")
+    if elapsed < 60:
+        print("ERROR! Mining is too fast")
+    if root.good_nonce():
+        print("Success! Nonce is good!")
+    else:
+        print("ERROR! Bad nonce")
+    
+    
     
     
     #salva as transações em um arquivo
