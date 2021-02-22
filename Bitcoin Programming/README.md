@@ -1,6 +1,7 @@
 ## Requisitos
 - Instalar a lib do bitcoin:
   > pip install bitcoin
+  
   > pip install blockchain 
 
 
