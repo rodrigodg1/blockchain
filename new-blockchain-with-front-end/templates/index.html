@@ -1,0 +1,37 @@
+<html>
+
+<head>
+    <title>Blockchain</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div>
+        <h1>Blockchain</h1>
+
+        <form action="/add_transaction" method="post">
+            <h3>Create a simple transaction:</h3>
+            <input type="text" name="transaction" placeholder="Transaction Data" required>
+            <button type="submit">Add Transaction</button>
+        </form>
+
+        <ul>
+            {% for block in blockchain %}
+            <li>
+                <p><b>Height: </b>{{ block.index }}</p>
+                <p><b>Transactions:</b> {{ block.transactions }}</p>
+                <p><b>Timestamp:</b> {{ block.timestamp }}</p>
+                <p><b>Hash of Previous Block: </b>{{ block.previous_hash }}</p>
+                <p><b>Hash: </b>{{ block.hash }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+
+
+    </div>
+
+</body>
+
+
+
+</html>
