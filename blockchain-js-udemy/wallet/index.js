@@ -1,61 +1,83 @@
+const ChainUtil = require('../chain-util');
 const Transaction = require('./transaction');
-const { STARTING_BALANCE } = require('../config');
-const { ec, cryptoHash } = require('../util');
+const { INITIAL_BALANCE } = require('../config');
 
 class Wallet {
   constructor() {
-    this.balance = STARTING_BALANCE;
-
-    this.keyPair = ec.genKeyPair();
-
+    this.balance = INITIAL_BALANCE;
+    this.keyPair = ChainUtil.genKeyPair();
     this.publicKey = this.keyPair.getPublic().encode('hex');
   }
 
-  sign(data) {
-    return this.keyPair.sign(cryptoHash(data))
+  toString() {
+    return `Wallet -
+      publicKey: ${this.publicKey.toString()}
+      balance  : ${this.balance}`
   }
 
-  createTransaction({ recipient, amount, chain }) {
-    if (chain) {
-      this.balance = Wallet.calculateBalance({
-        chain,
-        address: this.publicKey
-      });
-    }
+  sign(dataHash) {
+    return this.keyPair.sign(dataHash);
+  }
+
+  createTransaction(recipient, amount, blockchain, transactionPool) {
+    this.balance = this.calculateBalance(blockchain);
 
     if (amount > this.balance) {
-      throw new Error('Amount exceeds balance');
+      console.log(`Amount: ${amount} exceceds current balance: ${this.balance}`);
+      return;
     }
 
-    return new Transaction({ senderWallet: this, recipient, amount });
-  }
+    let transaction = transactionPool.existingTransaction(this.publicKey);
 
-  static calculateBalance({ chain, address }) {
-    let hasConductedTransaction = false;
-    let outputsTotal = 0;
-
-    for (let i=chain.length-1; i>0; i--) {
-      const block = chain[i];
-
-      for (let transaction of block.data) {
-        if (transaction.input.address === address) {
-          hasConductedTransaction = true;
-        }
-
-        const addressOutput = transaction.outputMap[address];
-
-        if (addressOutput) {
-          outputsTotal = outputsTotal + addressOutput;
-        }
-      }
-
-      if (hasConductedTransaction) {
-        break;
-      }
+    if (transaction) {
+      transaction.update(this, recipient, amount);
+    } else {
+      transaction = Transaction.newTransaction(this, recipient, amount);
+      transactionPool.updateOrAddTransaction(transaction);
     }
 
-    return hasConductedTransaction ? outputsTotal : STARTING_BALANCE + outputsTotal;
+    return transaction;
   }
-};
+
+  calculateBalance(blockchain) {
+    let balance = this.balance;
+    let transactions = [];
+    blockchain.chain.forEach(block => block.data.forEach(transaction => {
+      transactions.push(transaction);
+    }));
+
+    const walletInputTs = transactions
+      .filter(transaction => transaction.input.address === this.publicKey);
+
+    let startTime = 0;
+
+    if (walletInputTs.length > 0) {
+      const recentInputT = walletInputTs.reduce(
+        (prev, current) => prev.input.timestamp > current.input.timestamp ? prev : current
+      );
+
+      balance = recentInputT.outputs.find(output => output.address === this.publicKey).amount;
+      startTime = recentInputT.input.timestamp;
+    }
+
+    transactions.forEach(transaction => {
+      if (transaction.input.timestamp > startTime) {
+        transaction.outputs.find(output => {
+          if (output.address === this.publicKey) {
+            balance += output.amount;
+          }
+        });
+      }
+    });
+
+    return balance;
+  }
+
+  static blockchainWallet() {
+    const blockchainWallet = new this();
+    blockchainWallet.address = 'blockchain-wallet';
+    return blockchainWallet;
+  }
+}
 
 module.exports = Wallet;

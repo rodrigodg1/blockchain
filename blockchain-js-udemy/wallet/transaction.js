@@ -1,73 +1,68 @@
-const uuid = require('uuid/v1');
-const { verifySignature } = require('../util');
-const { REWARD_INPUT, MINING_REWARD } = require('../config');
+const ChainUtil = require('../chain-util');
+const { MINING_REWARD } = require('../config');
 
 class Transaction {
-  constructor({ senderWallet, recipient, amount, outputMap, input }) {
-    this.id = uuid();
-    this.outputMap = outputMap || this.createOutputMap({ senderWallet, recipient, amount });
-    this.input = input || this.createInput({ senderWallet, outputMap: this.outputMap });
+  constructor() {
+    this.id = ChainUtil.id();
+    this.input = null;
+    this.outputs = [];
   }
 
-  createOutputMap({ senderWallet, recipient, amount }) {
-    const outputMap = {};
+  update(senderWallet, recipient, amount) {
+    const senderOutput = this.outputs.find(output => output.address === senderWallet.publicKey);
 
-    outputMap[recipient] = amount;
-    outputMap[senderWallet.publicKey] = senderWallet.balance - amount;
+    if (amount > senderOutput.amount) {
+      console.log(`Amount: ${amount} exceeds balance.`);
+      return;
+    }
 
-    return outputMap;
+    senderOutput.amount = senderOutput.amount - amount;
+    this.outputs.push({ amount, address: recipient });
+    Transaction.signTransaction(this, senderWallet);
+
+    return this;
   }
 
-  createInput({ senderWallet, outputMap }) {
-    return {
+  static transactionWithOutputs(senderWallet, outputs) {
+    const transaction = new this();
+    transaction.outputs.push(...outputs);
+    Transaction.signTransaction(transaction, senderWallet);
+    return transaction;
+  }
+
+  static newTransaction(senderWallet, recipient, amount) {
+    if (amount > senderWallet.balance) {
+      console.log(`Amount: ${amount} exceeds balance.`);
+      return;
+    }
+
+    return Transaction.transactionWithOutputs(senderWallet, [
+      { amount: senderWallet.balance - amount, address: senderWallet.publicKey },
+      { amount, address: recipient }
+    ]);
+  }
+
+  static rewardTransaction(minerWallet, blockchainWallet) {
+    return Transaction.transactionWithOutputs(blockchainWallet, [{
+      amount: MINING_REWARD, address: minerWallet.publicKey
+    }]);
+  }
+
+  static signTransaction(transaction, senderWallet) {
+    transaction.input = {
       timestamp: Date.now(),
       amount: senderWallet.balance,
       address: senderWallet.publicKey,
-      signature: senderWallet.sign(outputMap)
-    };
+      signature: senderWallet.sign(ChainUtil.hash(transaction.outputs))
+    }
   }
 
-  update({ senderWallet, recipient, amount }) {
-    if (amount > this.outputMap[senderWallet.publicKey]) {
-      throw new Error('Amount exceeds balance');
-    }
-
-    if (!this.outputMap[recipient]) {
-      this.outputMap[recipient] = amount;
-    } else {
-      this.outputMap[recipient] = this.outputMap[recipient] + amount;
-    }
-
-    this.outputMap[senderWallet.publicKey] =
-      this.outputMap[senderWallet.publicKey] - amount;
-
-    this.input = this.createInput({ senderWallet, outputMap: this.outputMap });
-  }
-
-  static validTransaction(transaction) {
-    const { input: { address, amount, signature }, outputMap } = transaction;
-
-    const outputTotal = Object.values(outputMap)
-      .reduce((total, outputAmount) => total + outputAmount);
-
-    if (amount !== outputTotal) {
-      console.error(`Invalid transaction from ${address}`);
-      return false;
-    }
-
-    if (!verifySignature({ publicKey: address, data: outputMap, signature })) {
-      console.error(`Invalid signature from ${address}`);
-      return false;
-    }
-
-    return true;
-  }
-
-  static rewardTransaction({ minerWallet }) {
-    return new this({
-      input: REWARD_INPUT,
-      outputMap: { [minerWallet.publicKey]: MINING_REWARD }
-    });
+  static verifyTransaction(transaction) {
+    return ChainUtil.verifySignature(
+      transaction.input.address,
+      transaction.input.signature,
+      ChainUtil.hash(transaction.outputs)
+    );
   }
 }
 

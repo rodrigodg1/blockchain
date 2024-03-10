@@ -1,6 +1,1 @@
-*node_modules*
-*dist*
-*.cache*
-*.cache*
-*dist*
-*secrets*
+node_modules/
